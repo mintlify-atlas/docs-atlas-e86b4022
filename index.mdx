@@ -1,97 +1,272 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: GitHub Contributions Chart Documentation
+description: Visualize GitHub contributions with TeeChart VCL
+mode: custom
 ---
 
-## Setting up
+<div className="relative overflow-hidden">
+  {/* Hero Section */}
+  <div className="relative bg-gradient-to-br from-[#3bb358] via-[#246c3c] to-[#1a5230] dark:from-[#246c3c] dark:via-[#1a5230] dark:to-[#0f2818] py-20">
+    <div className="max-w-6xl mx-auto px-6 lg:px-8">
+      <div className="grid lg:grid-cols-12 gap-8 items-center">
+        <div className="lg:col-span-7">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+            Visualize GitHub Contributions
+          </h1>
+          <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-2xl">
+            A powerful TeeChart VCL demo that transforms GitHub contribution data into beautiful, interactive visualizations with full theme support.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <a 
+              href="/quickstart" 
+              className="inline-flex items-center px-6 py-3 rounded-lg bg-white text-[#246c3c] font-semibold hover:bg-white/90 transition-colors"
+            >
+              Get Started
+              <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </a>
+            <a 
+              href="/introduction" 
+              className="inline-flex items-center px-6 py-3 rounded-lg border border-white/30 bg-white/10 text-white font-semibold hover:bg-white/20 transition-colors"
+            >
+              Learn More
+            </a>
+          </div>
+        </div>
+        <div className="lg:col-span-5 flex justify-center">
+          <div className="relative w-full max-w-md">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#9bebab] to-[#3bb358] rounded-2xl blur-3xl opacity-30"></div>
+            <div className="relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  {[0, 1, 2, 3, 4].map(i => (
+                    <div key={i} className="flex-1 space-y-1">
+                      {[0, 1, 2, 3, 4, 5, 6].map(j => (
+                        <div 
+                          key={j} 
+                          className="h-3 rounded-sm"
+                          style={{
+                            backgroundColor: i === 0 ? '#f0edeb' : i === 1 ? '#a8e99b' : i === 2 ? '#63c440' : i === 3 ? '#4ea130' : '#396e21'
+                          }}
+                        ></div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-white/80 text-sm text-center">Interactive contribution heatmap</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-Get your documentation site up and running in minutes.
+{/* Quick Start Section */}
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="mb-12">
+    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+      Quick start
+    </h2>
+    <p className="text-base text-gray-600 dark:text-gray-400">
+      Get up and running with GitHub Contributions Chart in minutes
+    </p>
+  </div>
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+  <Steps>
+    <Step title="Clone the repository">
+      Download the project from GitHub to get started.
 
-## Make it yours
+      ```bash
+      git clone https://github.com/Steema/TeeChart-VCL-GitHub-Contributions.git
+      cd TeeChart-VCL-GitHub-Contributions
+      ```
+    </Step>
 
-Design a docs site that looks great and empowers your users.
+    <Step title="Open in your IDE">
+      Open `GitHubContributions.dproj` in Delphi or C++Builder. Make sure you have TeeChart VCL installed.
 
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+      <Note>TeeChart VCL is required to compile and run this application. Visit [Steema TeeChart](https://www.steema.com/product/vcl) to learn more.</Note>
+    </Step>
 
-## Create beautiful pages
+    <Step title="Build and run">
+      Compile the project and launch the application. Enter a GitHub username (e.g., "sallar") and click **Get Contributions** to see the visualization.
 
-Everything you need to create world-class documentation.
+      The application will fetch data from the public GitHub Contributions API and render an interactive chart showing contribution patterns over time.
+    </Step>
+  </Steps>
+</div>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+{/* Features Grid */}
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="mb-12">
+    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+      Explore features
+    </h2>
+    <p className="text-base text-gray-600 dark:text-gray-400">
+      Discover everything this demo has to offer
+    </p>
+  </div>
 
-## Need inspiration?
+  <CardGroup cols={2}>
+    <Card title="Data fetching" icon="cloud-arrow-down" href="/features/data-fetching">
+      Fetch contribution data from any GitHub user via the public API
+    </Card>
+    <Card title="Chart visualization" icon="chart-column" href="/features/chart-visualization">
+      Interactive TeeChart heatmap with tooltips and year selection
+    </Card>
+    <Card title="Theme support" icon="palette" href="/features/themes">
+      Switch between light and dark themes with custom color schemes
+    </Card>
+    <Card title="Customization" icon="sliders" href="/quickstart">
+      Configure week start day and select specific years to visualize
+    </Card>
+  </CardGroup>
+</div>
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+{/* Development Resources */}
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="mb-12">
+    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+      Development resources
+    </h2>
+    <p className="text-base text-gray-600 dark:text-gray-400">
+      Learn how the application works under the hood
+    </p>
+  </div>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <a 
+      href="/development/setup" 
+      className="group block rounded-2xl border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27] hover:border-[#3bb358] dark:hover:border-[#3bb358] overflow-hidden transition-colors no-underline"
+    >
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-3">
+          <div className="w-10 h-10 rounded-lg bg-[#3bb358]/10 dark:bg-[#3bb358]/20 flex items-center justify-center">
+            <svg className="w-6 h-6 text-[#3bb358]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+          </div>
+        </div>
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+          Development setup
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          Configure your development environment and dependencies
+        </p>
+        <div className="flex items-center text-sm font-medium text-[#3bb358] group-hover:text-[#246c3c] dark:group-hover:text-[#9bebab] transition-colors">
+          Read guide
+          <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </a>
+
+    <a 
+      href="/development/code-structure" 
+      className="group block rounded-2xl border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27] hover:border-[#3bb358] dark:hover:border-[#3bb358] overflow-hidden transition-colors no-underline"
+    >
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-3">
+          <div className="w-10 h-10 rounded-lg bg-[#3bb358]/10 dark:bg-[#3bb358]/20 flex items-center justify-center">
+            <svg className="w-6 h-6 text-[#3bb358]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM14 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
+            </svg>
+          </div>
+        </div>
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+          Code structure
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          Understand the project architecture and key components
+        </p>
+        <div className="flex items-center text-sm font-medium text-[#3bb358] group-hover:text-[#246c3c] dark:group-hover:text-[#9bebab] transition-colors">
+          Explore structure
+          <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </a>
+
+    <a 
+      href="/development/api-reference" 
+      className="group block rounded-2xl border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27] hover:border-[#3bb358] dark:hover:border-[#3bb358] overflow-hidden transition-colors no-underline"
+    >
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-3">
+          <div className="w-10 h-10 rounded-lg bg-[#3bb358]/10 dark:bg-[#3bb358]/20 flex items-center justify-center">
+            <svg className="w-6 h-6 text-[#3bb358]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+        </div>
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+          API reference
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          Complete reference for all functions, types, and constants
+        </p>
+        <div className="flex items-center text-sm font-medium text-[#3bb358] group-hover:text-[#246c3c] dark:group-hover:text-[#9bebab] transition-colors">
+          View API docs
+          <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </a>
+
+    <a 
+      href="/resources/faq" 
+      className="group block rounded-2xl border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27] hover:border-[#3bb358] dark:hover:border-[#3bb358] overflow-hidden transition-colors no-underline"
+    >
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-3">
+          <div className="w-10 h-10 rounded-lg bg-[#3bb358]/10 dark:bg-[#3bb358]/20 flex items-center justify-center">
+            <svg className="w-6 h-6 text-[#3bb358]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+          FAQ
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          Find answers to frequently asked questions
+        </p>
+        <div className="flex items-center text-sm font-medium text-[#3bb358] group-hover:text-[#246c3c] dark:group-hover:text-[#9bebab] transition-colors">
+          Browse FAQs
+          <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+{/* CTA Footer */}
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#3bb358] to-[#246c3c] dark:from-[#246c3c] dark:to-[#1a5230] p-8 md:p-12">
+    <div className="relative z-10 text-center">
+      <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+        Ready to explore GitHub contributions?
+      </h2>
+      <p className="text-lg text-white/90 mb-6 max-w-2xl mx-auto">
+        Start visualizing contribution data with this powerful TeeChart VCL demo.
+      </p>
+      <a 
+        href="/quickstart" 
+        className="inline-flex items-center px-6 py-3 rounded-lg bg-white text-[#246c3c] font-semibold hover:bg-white/90 transition-colors"
+      >
+        Get Started Now
+        <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</div>

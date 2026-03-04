@@ -1,0 +1,237 @@
+---
+title: Development Setup
+description: Set up your development environment to build and modify the GitHub Contributions Chart application
+icon: wrench
+---
+
+## Required Tools
+
+To develop the GitHub Contributions Chart application, you'll need:
+
+<CardGroup cols={2}>
+  <Card title="Delphi/C++Builder" icon="code">
+    Embarcadero Delphi or C++Builder (XE7 or later recommended)
+  </Card>
+  <Card title="TeeChart VCL" icon="chart-line">
+    TeeChart VCL library for chart visualization
+  </Card>
+</CardGroup>
+
+### Recommended IDE Versions
+
+- **Delphi 10.4 Sydney** or later (for best compatibility)
+- **C++Builder 10.4** or later (if using C++ development)
+- Earlier versions (XE7+) may work but are not tested
+
+## TeeChart VCL Installation
+
+The application relies heavily on TeeChart VCL components for visualizing the contribution graph.
+
+<Steps>
+  <Step title="Install TeeChart VCL">
+    TeeChart VCL is included with Delphi/C++Builder Professional and Enterprise editions. If you have a Community Edition, you'll need to purchase or evaluate TeeChart separately from [Steema Software](https://www.steema.com/).
+  </Step>
+  
+  <Step title="Verify Installation">
+    Open the Delphi IDE and check that the TeeChart components are available in the Tool Palette under the "TeeChart" tab.
+  </Step>
+  
+  <Step title="Configure Component Path">
+    Ensure the TeeChart library path is included in your project's search path:
+    - Open **Tools > Options > Language > Delphi > Library**
+    - Verify TeeChart paths are listed in the Library Path
+  </Step>
+</Steps>
+
+## Project Structure
+
+The project follows a standard Delphi VCL application structure:
+
+```
+workspace/source/
+├── GitHubContributions.dpr    # Main program file (entry point)
+├── Unit1.pas                  # Main form unit with core logic
+├── Unit1.dfm                  # Form definition (visual design)
+└── Themes.pas                 # Theme definitions and color schemes
+```
+
+### File Descriptions
+
+<AccordionGroup>
+  <Accordion title="GitHubContributions.dpr" icon="file-code">
+    The main program file that initializes the VCL application and creates the main form.
+    
+    ```pascal
+    program GitHubContributions;
+
+    uses
+      Vcl.Forms,
+      Unit1 in 'Unit1.pas' {Form1},
+      Themes in 'Themes.pas';
+
+    begin
+      Application.Initialize;
+      Application.MainFormOnTaskbar := True;
+      Application.CreateForm(TForm1, Form1);
+      Application.Run;
+    end.
+    ```
+  </Accordion>
+  
+  <Accordion title="Unit1.pas" icon="file-code">
+    Contains the main form class `TForm1` and all application logic including:
+    - GitHub API integration
+    - Chart rendering logic
+    - Event handlers for user interactions
+    - Date/week calculations
+  </Accordion>
+  
+  <Accordion title="Themes.pas" icon="palette">
+    Defines the `TTheme` record type and provides two built-in themes:
+    - `StandardTheme` - Light theme with GitHub's standard colors
+    - `GithubDarkTheme` - Dark theme matching GitHub's dark mode
+  </Accordion>
+  
+  <Accordion title="Unit1.dfm" icon="window-maximize">
+    Form definition file containing visual component properties and layout. This is automatically maintained by the Delphi IDE's form designer.
+  </Accordion>
+</AccordionGroup>
+
+## Dependencies
+
+The project uses the following Delphi/VCL units:
+
+### Windows & System Units
+```pascal
+Winapi.Windows
+Winapi.Messages
+System.SysUtils
+System.Variants
+System.Classes
+System.Rtti
+System.Generics.Collections
+DateUtils
+```
+
+### VCL Components
+```pascal
+Vcl.Graphics
+Vcl.Controls
+Vcl.Forms
+Vcl.Dialogs
+Vcl.StdCtrls
+Vcl.ExtCtrls
+```
+
+### Network Components
+```pascal
+System.Net.HttpClient
+System.Net.HttpClientComponent
+```
+
+### JSON Processing
+```pascal
+System.JSON
+System.JSON.Readers
+System.JSON.Types
+System.JSON.Builders
+```
+
+### TeeChart Components
+```pascal
+VCLTee.TeEngine    # Core TeeChart engine
+VCLTee.TeeProcs    # TeeChart procedures
+VCLTee.Chart       # Chart component
+VCLTee.TeeSurfa    # Surface series
+VCLTee.Series      # Series types
+VCLTee.TeeTools    # Chart tools (annotations, tips)
+```
+
+### Custom Units
+```pascal
+Themes  # Application theme definitions
+```
+
+## Opening and Building the Project
+
+<Steps>
+  <Step title="Open the Project">
+    Launch Delphi and open `GitHubContributions.dpr` from the source directory.
+  </Step>
+  
+  <Step title="Verify Dependencies">
+    Ensure all units in the `uses` clauses can be found. The IDE will highlight any missing units in red.
+  </Step>
+  
+  <Step title="Build the Project">
+    Select **Project > Build GitHubContributions** or press **Shift+F9**.
+    
+    <Note>
+      The first build may take longer as the compiler processes all TeeChart units.
+    </Note>
+  </Step>
+  
+  <Step title="Run the Application">
+    Press **F9** to run the application in debug mode, or **Ctrl+Shift+F9** to run without debugging.
+  </Step>
+</Steps>
+
+## Configuration Requirements
+
+### Internet Access
+
+The application requires internet access to:
+- Fetch GitHub contribution data from `github-contributions.vercel.app`
+- No authentication is required for the API
+
+### System Requirements
+
+- **OS**: Windows 7 or later
+- **RAM**: 2GB minimum (4GB recommended)
+- **Disk Space**: 100MB for compiled application
+
+<Warning>
+  Ensure your firewall allows the application to make outbound HTTP requests to `github-contributions.vercel.app`.
+</Warning>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="TeeChart components not found" icon="exclamation-triangle">
+    **Problem**: Build fails with errors about missing TeeChart units.
+    
+    **Solution**:
+    1. Verify TeeChart is properly installed
+    2. Check that TeeChart library paths are in Tools > Options > Library Path
+    3. Try reinstalling TeeChart from the GetIt Package Manager
+  </Accordion>
+  
+  <Accordion title="HTTP request fails" icon="wifi-slash">
+    **Problem**: Application cannot fetch GitHub data.
+    
+    **Solution**:
+    1. Check your internet connection
+    2. Verify firewall settings allow HTTP requests
+    3. Test the API directly: `https://github-contributions.vercel.app/api/v1/sallar`
+  </Accordion>
+  
+  <Accordion title="JSON parsing errors" icon="file-exclamation">
+    **Problem**: Application crashes when processing GitHub data.
+    
+    **Solution**:
+    1. Ensure you're using Delphi XE7 or later (required for modern JSON support)
+    2. Check that System.JSON units are properly included
+    3. Verify the API response format hasn't changed
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Code Structure" icon="sitemap" href="./code-structure">
+    Learn about the application architecture and key procedures
+  </Card>
+  <Card title="API Reference" icon="book" href="./api-reference">
+    Explore the complete API documentation for all functions
+  </Card>
+</CardGroup>

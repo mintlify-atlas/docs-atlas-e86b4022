@@ -1,0 +1,289 @@
+---
+title: Chart Visualization
+description: Understand how the application creates the GitHub-style contribution chart using TeeChart
+icon: 'chart-simple'
+---
+
+## Overview
+
+The GitHub Contributions Chart uses TeeChart's `TPointSeries` to create a grid-based visualization similar to GitHub's contribution graph. Each day is represented as a colored point, with color intensity representing contribution levels.
+
+## Chart Configuration
+
+The chart is initialized in the `FormCreate` procedure with specific settings:
+
+```pascal
+procedure TForm1.FormCreate(Sender: TObject);
+var
+  i: Integer;
+begin
+  EUsername.Text := 'sallar';
+  CBYears.Enabled := False;
+  CBFirstDayOfWeek.Enabled := False;
+
+  Chart1.Hide;
+  Chart1.AllowZoom := False;
+  Chart1.AllowPanning := pmNone;
+  Chart1.MarginTop := 20;
+  Chart1.MarginLeft := 7;
+
+  Series1.Pointer.Pen.Hide;
+  Series1.Pointer.Selected.Hover.Pen.Color := clBlack;
+  Series1.Pointer.Selected.Hover.Pen.Width := 1;
+  Series1.Pointer.Size:=6;
+
+  SetLength(monthTitles, 12);
+  for i:=0 to Length(monthTitles)-1 do
+  begin
+    monthTitles[i] := TAnnotationTool(Chart1.Tools.Add(TAnnotationTool));
+    monthTitles[i].Shape.Transparent := True;
+    monthTitles[i].Active := False;
+  end;
+
+  SetLength(dayTitles, 3);
+  for i:=0 to Length(dayTitles)-1 do
+  begin
+    dayTitles[i] := TAnnotationTool(Chart1.Tools.Add(TAnnotationTool));
+    dayTitles[i].Shape.Transparent := True;
+    dayTitles[i].Active := False;
+  end;
+end;
+```
+
+### Key Configuration Elements
+
+<CardGroup cols={2}>
+  <Card title="Chart Settings" icon="sliders">
+    - Zoom disabled
+    - Panning disabled
+    - Custom margins for labels
+    - Initially hidden until data loads
+  </Card>
+  
+  <Card title="Point Series" icon="circle-dot">
+    - No border pen
+    - Black hover outline
+    - 6-pixel point size
+    - Color-coded by intensity
+  </Card>
+  
+  <Card title="Month Labels" icon="calendar">
+    - 12 annotation tools
+    - Transparent background
+    - Positioned at top
+    - Show abbreviated month names
+  </Card>
+  
+  <Card title="Day Labels" icon="calendar-day">
+    - 3 annotation tools
+    - Show Mon/Wed/Fri (or alternate based on first day)
+    - Positioned on left axis
+    - Transparent background
+  </Card>
+</CardGroup>
+
+## DrawChart Procedure
+
+The main chart rendering logic is in the `DrawChart` procedure:
+
+```pascal
+procedure TForm1.DrawChart;
+var
+  targetYear,
+  tmpWeek,
+  tmpDay,
+  tmpIntensity: Integer;
+  tmpYear: Word;
+  tmpDate: TDateTime;
+  tmpDateStr,
+  tmpIntensityStr: string;
+  contributions: TJSONArray;
+  iterator: TJSONIterator;
+  tmpFormatSettings: TFormatSettings;
+begin
+  Series1.Clear;
+  Series1.Visible := False;
+
+  tmpFormatSettings := FormatSettings;
+  tmpFormatSettings.ShortDateFormat := 'yyyy-mm-dd';
+
+  if (gitHubContributions = nil) or
+     (not gitHubContributions.TryGetValue<TJSONArray>('contributions', contributions)) then
+    Exit;
+
+  if not TryStrToInt(CBYears.Items[CBYears.ItemIndex], targetYear) then
+    Exit;
+
+  iterator := TJSONIterator.Create(TJsonObjectReader.Create(contributions));
+
+  while iterator.Next do
+  begin
+    iterator.Recurse;
+
+    tmpDateStr := '';
+    tmpIntensityStr := '';
+    while iterator.Next do
+    begin
+      if iterator.Key = 'date' then
+        tmpDateStr := iterator.AsString
+      else if iterator.Key = 'intensity' then
+        tmpIntensityStr := iterator.AsString;
+    end;
+
+    iterator.Return;
+
+    if (tmpDateStr = '') or
+       not TryStrToDate(tmpDateStr, tmpDate, tmpFormatSettings) then
+      Continue;
+
+    if (tmpIntensityStr = '') or
+       not TryStrToInt(tmpIntensityStr, tmpIntensity) then
+      Continue;
+
+    if YearOf(tmpDate) <> targetYear then
+      Continue;
+
+    CustomWeekDayOfTheYear(tmpDate, CBFirstDayOfWeek.ItemIndex, tmpWeek, tmpDay);
+
+    Series1.AddXY(tmpWeek, 7-tmpDay, FormatMark(tmpDate), IntensityThemeColor(tmpIntensity));
+  end;
+
+  Series1.Visible := True;
+  Chart1.Show;
+  Chart1.Draw;
+  // ... (month and day label positioning code continues)
+end;
+```
+
+### Rendering Process
+
+<Steps>
+  <Step title="Clear Previous Data">
+    Clear the series and hide it temporarily for better performance
+  </Step>
+  
+  <Step title="Parse Contributions">
+    Iterate through the JSON contributions array for the selected year
+  </Step>
+  
+  <Step title="Calculate Position">
+    Use `CustomWeekDayOfTheYear` to determine week (X) and day (Y) coordinates
+  </Step>
+  
+  <Step title="Add Data Points">
+    Add each day as a point with color based on contribution intensity
+  </Step>
+  
+  <Step title="Position Labels">
+    Update month and day labels to match the chart axes
+  </Step>
+  
+  <Step title="Display Chart">
+    Show the series and render the chart
+  </Step>
+</Steps>
+
+## CustomWeekDayOfTheYear Function
+
+This function calculates the week and day-of-week for proper chart positioning:
+
+```pascal
+procedure CustomWeekDayOfTheYear(ADate: TDateTime; AFirstDayOfWeek: Integer; var AWeek, ADay: Integer);
+var
+  tmpYear: Word;
+begin
+  AWeek := WeekOfTheYear(ADate, tmpYear);
+  if tmpYear < YearOf(ADate) then
+    AWeek := -1
+  else if tmpYear > YearOf(ADate) then
+    AWeek := WeeksInYear(ADate)+1;
+
+  ADay:=DayOfTheWeek(ADate);
+
+  if (AFirstDayOfWeek = 1) then
+  begin
+    ADay:=(ADay mod 7) + 1;
+
+    if DayOfTheWeek(ADate) = 7 then
+    begin
+      Inc(AWeek);
+    end;
+  end;
+end;
+```
+
+### How It Works
+
+<Accordion title="Week Calculation">
+The function uses `WeekOfTheYear` but handles edge cases:
+- Dates belonging to previous year's last week get week -1
+- Dates belonging to next year's first week get max week + 1
+- This ensures the chart displays correctly at year boundaries
+</Accordion>
+
+<Accordion title="Day of Week Adjustment">
+When the first day of week is Monday (index 1):
+- Days are shifted: `(ADay mod 7) + 1`
+- Sundays increment the week number
+- This allows users to choose between Sunday-first or Monday-first display
+</Accordion>
+
+## Color-Coded Intensity Display
+
+Each contribution point is colored based on its intensity level (0-4):
+
+```pascal
+Series1.AddXY(tmpWeek, 7-tmpDay, FormatMark(tmpDate), IntensityThemeColor(tmpIntensity));
+```
+
+The `IntensityThemeColor` function maps intensity to theme colors:
+
+```pascal
+function IntensityThemeColor(AIntensity: Integer): TColor;
+begin
+  Result:=currentTheme.Grades[AIntensity];
+end;
+```
+
+<Info>
+Intensity values range from 0 (no contributions) to 4 (very high activity), with each level having a distinct color in the current theme.
+</Info>
+
+## Interactive Features
+
+### Tooltips
+
+The chart uses `TMarksTipTool` to show formatted tooltips on hover:
+
+```pascal
+function FormatMark(ADate: TDateTime): string;
+begin
+  Result := Format('%s %d', [TFormatSettings.Invariant.LongMonthNames[MonthOf(ADate)], DayOf(ADate)]);
+
+  case DayOf(ADate) of
+    1, 21, 31: Result:=Result + 'st';
+    2, 22: Result:=Result + 'nd';
+    3, 23: Result:=Result + 'rd';
+    else
+       Result:=Result + 'th';
+  end;
+end;
+```
+
+This produces tooltip text like "January 1st", "February 22nd", etc.
+
+### Hover Effects
+
+Points have a black outline when hovered:
+
+```pascal
+Series1.Pointer.Selected.Hover.Pen.Color := clBlack;
+Series1.Pointer.Selected.Hover.Pen.Width := 1;
+```
+
+## Coordinate System
+
+- **X-axis**: Week number (1-53)
+- **Y-axis**: Day of week inverted (`7 - dayOfWeek`) so Monday/Sunday appears at top
+- **Labels**: Month names at top, day names on left
+- **Points**: 6-pixel colored squares representing each day

@@ -1,0 +1,81 @@
+---
+title: Introduction
+description: Learn about the GitHub Contributions Chart project - a TeeChart VCL demo for visualizing GitHub contributions
+---
+
+## Overview
+
+GitHub Contributions Chart is a Delphi/C++Builder application that visualizes a GitHub user's contribution history using TeeChart VCL. The project fetches contribution data via the public API provided by [sallar/github-contributions-chart](https://github.com/sallar/github-contributions-chart) and renders it in a rich, interactive chart.
+
+<Note>
+  This project is not affiliated with or endorsed by GitHub or the sallar/github-contributions-chart project.
+</Note>
+
+## What is GitHub Contributions Chart?
+
+This is a demonstration application showcasing the capabilities of TeeChart VCL for creating GitHub-style contribution visualizations. It retrieves publicly available contribution data for any GitHub user and displays it in an interactive, color-coded chart that mirrors GitHub's contribution graph design.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="User Contribution Fetching" icon="download">
+    Retrieves contribution data for any GitHub user through the API endpoint at `github-contributions.vercel.app`
+  </Card>
+  
+  <Card title="Interactive Visualization" icon="chart-simple">
+    Displays contributions using TeeChart VCL's PointSeries with color-coded intensity levels (0-4)
+  </Card>
+  
+  <Card title="Multi-Year Support" icon="calendar">
+    Browse contribution history across different years with an easy year selector
+  </Card>
+  
+  <Card title="Theme Support" icon="palette">
+    Switch between Light and Dark themes that match GitHub's visual style
+  </Card>
+  
+  <Card title="Customizable Week Layout" icon="table-cells">
+    Choose to start weeks on Sunday or Monday to match your preference
+  </Card>
+  
+  <Card title="Detailed Tooltips" icon="info-circle">
+    Hover over any day to see the exact date with formatted tooltip (e.g., "January 1st")
+  </Card>
+</CardGroup>
+
+## What Can You Do With It?
+
+- **Visualize Your Contributions**: Enter your GitHub username to see your contribution history rendered as a beautiful chart
+- **Compare Years**: Quickly switch between different years to see how your contribution patterns have changed over time
+- **Learn TeeChart VCL**: Study the source code to understand how to implement similar visualizations in your own Delphi/C++Builder projects
+- **Customize Themes**: Toggle between light and dark themes to match your preferences or extend the code with your own color schemes
+- **Adjust Week Formatting**: Choose whether your weeks start on Sunday or Monday for regional preferences
+
+## Technical Highlights
+
+The application demonstrates several advanced Delphi programming techniques:
+
+- **HTTP Client Usage**: Fetches JSON data from REST APIs using `TNetHTTPClient` (Unit1.pas:55-64)
+- **JSON Parsing**: Parses complex JSON responses using `TJSONObject` and `TJSONIterator` (Unit1.pas:66-72)
+- **Chart Customization**: Creates custom point series with dynamic colors based on intensity levels (Unit1.pas:238)
+- **Theme System**: Implements a flexible theme system with background, text, and gradient colors (Themes.pas:7-28)
+- **Date Utilities**: Handles week calculations and custom date formatting (Unit1.pas:122-143)
+
+## API Integration
+
+The application uses the public API endpoint:
+
+```
+https://github-contributions.vercel.app/api/v1/{username}
+```
+
+This endpoint returns JSON data containing:
+- Available years of contribution data
+- Daily contribution records with dates and intensity levels (0-4)
+- Metadata about the user's contribution history
+
+## Next Steps
+
+<Card title="Get Started" icon="rocket" href="/quickstart">
+  Follow the quickstart guide to clone, build, and run the application
+</Card>

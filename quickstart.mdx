@@ -1,80 +1,273 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get the GitHub Contributions Chart application up and running in minutes
 ---
 
-## Get started in three steps
+## Prerequisites
 
-Get your documentation site running locally and make your first customization.
+Before you begin, ensure you have the following installed:
 
-### Step 1: Set up your local environment
+<Steps>
+  <Step title="Delphi or C++Builder IDE">
+    You need a Delphi or C++Builder IDE to open and compile the project. The project uses VCL (Visual Component Library) components.
+  </Step>
+  
+  <Step title="TeeChart VCL">
+    TeeChart VCL must be installed in your IDE. This is a commercial charting component library that powers the visualizations.
+    
+    <Warning>
+      The application will not compile without TeeChart VCL properly installed and configured in your IDE.
+    </Warning>
+  </Step>
+</Steps>
+
+## Installation
+
+<Steps>
+  <Step title="Clone the Repository">
+    Clone the GitHub Contributions Chart repository to your local machine:
+    
+    ```bash
+    git clone https://github.com/Steema/GitHub-Contributions-Chart-with-TeeChart-VCL.git
+    cd GitHub-Contributions-Chart-with-TeeChart-VCL
+    ```
+  </Step>
+  
+  <Step title="Open the Project">
+    Launch your Delphi or C++Builder IDE and open the project file:
+    
+    ```
+    GitHubContributions.dpr
+    ```
+    
+    This is the main project file that includes:
+    - `Unit1.pas` - Main form and application logic
+    - `Themes.pas` - Theme definitions for light and dark modes
+  </Step>
+  
+  <Step title="Build the Project">
+    Build the project using your IDE's build command (typically `Project > Build` or `Ctrl+F9`).
+    
+    The project will compile and link all necessary units and resources.
+  </Step>
+  
+  <Step title="Run the Application">
+    Run the compiled application using your IDE's run command (typically `Run > Run` or `F9`).
+    
+    The main form will appear with the GitHub Contributions Chart interface.
+  </Step>
+</Steps>
+
+## Using the Application
+
+### Fetching Contribution Data
+
+<Steps>
+  <Step title="Enter a GitHub Username">
+    In the username field, enter any valid GitHub username. The default example is `sallar`:
+    
+    ```pascal
+    // Default username set on form creation (Unit1.pas:289)
+    EUsername.Text := 'sallar';
+    ```
+    
+    You can change this to any GitHub user, for example: `torvalds`, `gvanrossum`, or your own username.
+  </Step>
+  
+  <Step title="Click 'Get Contributions'">
+    Click the "Get Contributions" button to fetch data from the API. The application will:
+    
+    1. Make an HTTP request to `https://github-contributions.vercel.app/api/v1/{username}`
+    2. Parse the JSON response containing years and contribution data
+    3. Populate the year selector with available years
+    
+    ```pascal
+    // API call implementation (Unit1.pas:70)
+    response := DownloadWeb(Format('https://github-contributions.vercel.app/api/v1/%s', [username]));
+    Result := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(response), 0) as TJSONObject;
+    ```
+  </Step>
+  
+  <Step title="Wait for Data to Load">
+    The cursor will change to an hourglass while fetching data. Once complete, the chart will display the most recent year's contributions.
+    
+    <Note>
+      The application requires an active internet connection to fetch contribution data from the API.
+    </Note>
+  </Step>
+</Steps>
+
+### Viewing Contributions
+
+Once data is loaded, you'll see:
+
+- **Contribution Chart**: A grid-style chart where each point represents a day
+- **Color-Coded Intensity**: Different colors indicate contribution levels (0-4)
+  - Level 0: Light gray (no contributions)
+  - Level 1-4: Progressively darker shades of green (more contributions)
+- **Month Labels**: Short month names (Jan, Feb, Mar, etc.) across the top
+- **Day Labels**: Abbreviated day names (Mon, Wed, Fri) on the left side
+
+```pascal
+// Theme color grades (Themes.pas:20)
+Grades: ($F0EDEB, $A8E99B, $63C440, $4EA130, $396E21);
+// 5 intensity levels from light to dark green
+```
+
+### Interactive Features
 
 <AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+  <Accordion title="Selecting Different Years">
+    Use the year dropdown to view contributions from different years:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
+    ```pascal
+    // Year selection change handler (Unit1.pas:280-283)
+    procedure TForm1.CBYearsChange(Sender: TObject);
+    begin
+      DrawChart;
+    end;
+    ```
+    
+    The chart will immediately update to show the selected year's data.
   </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+  
+  <Accordion title="Switching Themes">
+    Click the "Dark" or "Light" button to toggle between themes:
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
+    ```pascal
+    // Theme toggle implementation (Unit1.pas:145-173)
+    if BTheme.Caption = 'Dark' then
+    begin
+      currentTheme := GithubDarkTheme;
+      BTheme.Caption := 'Light';
+    end
+    else
+    begin
+      currentTheme := StandardTheme;
+      BTheme.Caption := 'Dark';
+    end;
+    ```
+    
+    The theme affects:
+    - Background color
+    - Text color
+    - Chart colors
+    - Control colors (edit boxes, combo boxes)
+  </Accordion>
+  
+  <Accordion title="Changing First Day of Week">
+    Use the "First Day of Week" dropdown to choose between Sunday (0) or Monday (1):
+    
+    ```pascal
+    // Custom week calculation (Unit1.pas:122-143)
+    procedure CustomWeekDayOfTheYear(ADate: TDateTime; AFirstDayOfWeek: Integer; 
+                                     var AWeek, ADay: Integer);
+    ```
+    
+    This adjusts the chart layout to match your regional preferences.
+  </Accordion>
+  
+  <Accordion title="Viewing Daily Details">
+    Hover over any point in the chart to see a tooltip with the formatted date:
+    
+    ```pascal
+    // Tooltip formatting (Unit1.pas:109-120)
+    function FormatMark(ADate: TDateTime): string;
+    begin
+      Result := Format('%s %d', [TFormatSettings.Invariant.LongMonthNames[MonthOf(ADate)], 
+                                 DayOf(ADate)]);
+      // Adds proper suffix: 1st, 2nd, 3rd, 4th, etc.
+    end;
+    ```
+    
+    Example tooltip: "January 1st", "March 23rd"
   </Accordion>
 </AccordionGroup>
 
-### Step 2: Deploy your changes
+## Code Examples
+
+### Fetching Contributions from API
+
+Here's how the application downloads and parses GitHub contribution data:
+
+```pascal
+// Download web content (Unit1.pas:55-64)
+function DownloadWeb(aURL: string): string;
+var httpClient: TNetHTTPClient;
+begin
+  httpClient := TNetHTTPClient.Create(nil);
+  try
+    Result := httpClient.Get(aURL).ContentAsString;
+  finally
+    httpClient.Free;
+  end;
+end;
+
+// Get GitHub contributions (Unit1.pas:66-72)
+function GetGitHubContributions(username: string): TJSONObject;
+var
+  response: string;
+begin
+  response := DownloadWeb(Format('https://github-contributions.vercel.app/api/v1/%s', [username]));
+  Result := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(response), 0) as TJSONObject;
+end;
+```
+
+### Drawing the Contribution Chart
+
+The chart plotting logic maps each contribution day to a point with color-coded intensity:
+
+```pascal
+// Add contribution point to chart (Unit1.pas:238)
+Series1.AddXY(tmpWeek, 7-tmpDay, FormatMark(tmpDate), IntensityThemeColor(tmpIntensity));
+
+// Intensity-based color selection (Unit1.pas:175-178)
+function IntensityThemeColor(AIntensity: Integer): TColor;
+begin
+  Result := currentTheme.Grades[AIntensity];
+end;
+```
+
+## Troubleshooting
 
 <AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+  <Accordion title="Project Won't Compile">
+    **Error**: Missing TeeChart components or units
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
+    **Solution**: Ensure TeeChart VCL is properly installed in your IDE. Check that all required units are in your library path:
+    - `VCLTee.TeEngine`
+    - `VCLTee.TeeProcs`
+    - `VCLTee.Chart`
+    - `VCLTee.Series`
+    - `VCLTee.TeeTools`
+  </Accordion>
+  
+  <Accordion title="No Data Appears After Clicking Get Contributions">
+    **Possible causes**:
+    - No internet connection
+    - Invalid GitHub username
+    - API endpoint is down
+    - Firewall blocking HTTP requests
+    
+    **Solution**: Verify your internet connection and try a known valid username like `sallar` or `torvalds`.
+  </Accordion>
+  
+  <Accordion title="Chart Displays Incorrectly">
+    **Issue**: Points are misaligned or overlapping
+    
+    **Solution**: Try changing the "First Day of Week" setting or selecting a different year. The chart layout is calculated based on week boundaries.
   </Accordion>
 </AccordionGroup>
 
-### Step 3: Go live
+## Next Steps
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+Now that you have the application running:
 
-## Next steps
+- Explore the source code in `Unit1.pas` to understand the implementation
+- Examine `Themes.pas` to see how to create custom color themes
+- Modify the chart properties in the form designer to customize appearance
+- Extend the application with additional features like date range filtering or contribution statistics
 
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
+<Card title="View Source Code" icon="code" href="https://github.com/Steema/GitHub-Contributions-Chart-with-TeeChart-VCL">
+  Check out the full source code on GitHub
 </Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

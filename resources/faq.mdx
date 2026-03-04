@@ -1,0 +1,166 @@
+---
+title: Frequently Asked Questions
+description: Common questions and answers about the GitHub Contributions Chart application
+---
+
+<AccordionGroup>
+  <Accordion title="How do I get TeeChart VCL?">
+    TeeChart VCL is a commercial charting component by Steema Software. To use this project, you'll need:
+    
+    1. Purchase a license from [Steema's website](https://www.steema.com/product/vcl)
+    2. Install TeeChart VCL in your Delphi or C++Builder IDE
+    3. Ensure the component is properly registered before building the project
+    
+    The project specifically uses the following TeeChart components:
+    - `TChart` - Main chart container
+    - `TPointSeries` - For plotting contribution points
+    - `TMarksTipTool` - For hover tooltips
+    - `TAnnotationTool` - For month and day labels
+  </Accordion>
+
+  <Accordion title="What GitHub users can I visualize?">
+    You can visualize contributions for **any public GitHub user**. Simply:
+    
+    1. Enter the GitHub username in the text field
+    2. Click the "Get Contributions" button
+    3. Wait for the data to load from the API
+    
+    The application uses the public API endpoint:
+    ```
+    https://github-contributions.vercel.app/api/v1/{username}
+    ```
+    
+    <Note>
+    The default username is set to "sallar" (the creator of the contributions API). This serves as a demonstration when you first run the application.
+    </Note>
+  </Accordion>
+
+  <Accordion title="How do I switch between light and dark themes?">
+    The application includes built-in theme support:
+    
+    1. Click the **Theme button** (labeled "Dark" or "Light")
+    2. The interface will switch between:
+       - **Standard Theme** - Light background with standard colors
+       - **GitHub Dark Theme** - Dark background matching GitHub's dark mode
+    
+    The theme affects:
+    - Application background and text colors
+    - Chart background
+    - Contribution intensity color grades
+    - All UI controls (input fields, dropdowns)
+    - Month and day labels
+    
+    The theme button toggles between modes - when it shows "Dark", clicking will switch to dark theme, and vice versa.
+  </Accordion>
+
+  <Accordion title="Can I change the first day of the week?">
+    Yes! The application allows you to customize the first day of the week:
+    
+    1. Use the **"First Day of Week"** dropdown menu
+    2. Select between:
+       - **Sunday** (index 0) - Standard US calendar format
+       - **Monday** (index 1) - ISO 8601 standard, common in Europe
+    
+    Changing this setting will automatically redraw the chart with the new week structure. This affects:
+    - How contributions are organized into weeks
+    - The vertical axis day labels
+    - Week number calculations
+    
+    <Info>
+    This dropdown is only enabled after you've successfully loaded contribution data for a user.
+    </Info>
+  </Accordion>
+
+  <Accordion title="What data does the API return?">
+    The GitHub Contributions API returns JSON data containing:
+    
+    **Years Array:**
+    - List of years with available contribution data
+    - Used to populate the year selection dropdown
+    
+    **Contributions Array:**
+    Each contribution entry includes:
+    - `date` - Date in YYYY-MM-DD format
+    - `intensity` - Contribution intensity level (0-4)
+      - 0: No contributions
+      - 1-4: Increasing levels of activity
+    
+    The intensity levels are mapped to colors based on the current theme, similar to GitHub's native contribution graph.
+  </Accordion>
+
+  <Accordion title="How do I build the project?">
+    To build and run the project:
+    
+    1. **Prerequisites:**
+       - Delphi or C++Builder IDE
+       - TeeChart VCL installed and licensed
+       - Windows platform (uses WinAPI)
+    
+    2. **Build Steps:**
+       - Clone the repository
+       - Open the project file in your IDE
+       - Verify TeeChart VCL components are available
+       - Build the project (F9 or Build menu)
+       - Run the application
+    
+    3. **Required Units:**
+       The project depends on:
+       - `System.Net.HttpClient` - For API requests
+       - `System.JSON` - For parsing API responses
+       - `VCLTee.*` - TeeChart VCL components
+       - `DateUtils` - For date calculations
+  </Accordion>
+
+  <Accordion title="What if the chart doesn't display after loading data?">
+    If contributions data loads but the chart doesn't appear:
+    
+    1. **Check the year dropdown** - Make sure a valid year is selected
+    2. **Verify the username** - Ensure the user has contributions in the selected year
+    3. **Check your internet connection** - The API requires network access
+    4. **Look for error messages** - The application may fail silently if data is malformed
+    
+    Common issues:
+    - **User has no contributions in selected year** - Try a different year from the dropdown
+    - **API is down** - The Vercel-hosted API may be temporarily unavailable
+    - **Rate limiting** - Multiple rapid requests may be rate-limited
+    
+    <Tip>
+    The chart is hidden by default and only shows after successful data loading. The cursor changes to an hourglass during data retrieval.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Can I hover over contributions to see details?">
+    Yes! The chart includes interactive tooltips:
+    
+    - Hover over any contribution point to see the date
+    - Dates are formatted as "Month Day" with ordinal suffix (e.g., "January 1st", "March 23rd")
+    - The tooltip shows the exact day you contributed
+    
+    The tooltip functionality is provided by the `TMarksTipTool` component from TeeChart VCL.
+  </Accordion>
+
+  <Accordion title="Why are some dates missing from the chart?">
+    The chart only displays dates with contribution data from GitHub. This means:
+    
+    - Days with zero contributions may not appear as visible points
+    - Only dates within the selected year are shown
+    - The API filters data by year automatically
+    
+    Additionally:
+    - Week calculations exclude weeks from the previous/next year
+    - The first week of the year might start mid-week depending on your "First Day of Week" setting
+  </Accordion>
+</AccordionGroup>
+
+## Still Have Questions?
+
+If your question isn't answered here, please:
+
+<CardGroup cols={2}>
+  <Card title="Check the Documentation" icon="book" href="/introduction">
+    Browse the complete documentation for detailed information
+  </Card>
+  <Card title="Report an Issue" icon="github" href="#">
+    Open an issue on the GitHub repository
+  </Card>
+</CardGroup>

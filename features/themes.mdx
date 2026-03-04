@@ -1,0 +1,273 @@
+---
+title: Theme Support
+description: Learn how the application supports light and dark themes for the contribution chart
+icon: 'palette'
+---
+
+## Overview
+
+The GitHub Contributions Chart includes built-in theme support with two predefined themes: **Standard (Light)** and **GitHub Dark**. Themes control colors for the background, text, and the five contribution intensity levels.
+
+## TTheme Record Structure
+
+Themes are defined using a record type in `Themes.pas`:
+
+```pascal
+type
+  TTheme = record
+    Background: TColor;
+    Text: TColor;
+    Meta: TColor;
+    Grades: array [0 .. 4] of TColor;
+  end;
+```
+
+### Theme Properties
+
+<ParamField path="Background" type="TColor">
+  Main background color for the form and chart
+</ParamField>
+
+<ParamField path="Text" type="TColor">
+  Text color for labels, month names, and day names
+</ParamField>
+
+<ParamField path="Meta" type="TColor">
+  Metadata text color (currently unused in the implementation)
+</ParamField>
+
+<ParamField path="Grades" type="array[0..4] of TColor">
+  Five colors representing contribution intensity levels from 0 (none) to 4 (very high)
+</ParamField>
+
+## Predefined Themes
+
+### StandardTheme (Light)
+
+The default light theme with green intensity colors:
+
+```pascal
+const
+  StandardTheme: TTheme = (
+    Background: $FFFFFF;  // White
+    Text: $000000;        // Black
+    Meta: $666666;        // Gray
+    Grades: ($F0EDEB, $A8E99B, $63C440, $4EA130, $396E21);
+  );
+```
+
+#### Intensity Colors (Light Theme)
+
+<CardGroup cols={5}>
+  <Card title="Level 0" icon="square">
+    `$F0EDEB`
+    
+    Very light beige (no contributions)
+  </Card>
+  
+  <Card title="Level 1" icon="square">
+    `$A8E99B`
+    
+    Light green
+  </Card>
+  
+  <Card title="Level 2" icon="square">
+    `$63C440`
+    
+    Medium green
+  </Card>
+  
+  <Card title="Level 3" icon="square">
+    `$4EA130`
+    
+    Dark green
+  </Card>
+  
+  <Card title="Level 4" icon="square">
+    `$396E21`
+    
+    Very dark green
+  </Card>
+</CardGroup>
+
+### GithubDarkTheme
+
+A dark theme inspired by GitHub's dark mode:
+
+```pascal
+const
+  GithubDarkTheme: TTheme = (
+    Background: $101217;  // Very dark blue-gray
+    Text: $FFFFFF;        // White
+    Meta: $DDDDDD;        // Light gray
+    Grades: ($221B16, $203800, $2D6000, $3D9810, $45D527);
+  );
+```
+
+#### Intensity Colors (Dark Theme)
+
+<CardGroup cols={5}>
+  <Card title="Level 0" icon="square">
+    `$221B16`
+    
+    Very dark brown (no contributions)
+  </Card>
+  
+  <Card title="Level 1" icon="square">
+    `$203800`
+    
+    Dark olive green
+  </Card>
+  
+  <Card title="Level 2" icon="square">
+    `$2D6000`
+    
+    Medium dark green
+  </Card>
+  
+  <Card title="Level 3" icon="square">
+    `$3D9810`
+    
+    Bright medium green
+  </Card>
+  
+  <Card title="Level 4" icon="square">
+    `$45D527`
+    
+    Bright lime green
+  </Card>
+</CardGroup>
+
+<Note>
+Delphi uses BGR (Blue-Green-Red) color format in hexadecimal, which is the reverse of typical RGB web colors.
+</Note>
+
+## IntensityThemeColor Function
+
+This function maps contribution intensity to the appropriate theme color:
+
+```pascal
+function IntensityThemeColor(AIntensity: Integer): TColor;
+begin
+  Result:=currentTheme.Grades[AIntensity];
+end;
+```
+
+The function is called when adding points to the chart:
+
+```pascal
+Series1.AddXY(tmpWeek, 7-tmpDay, FormatMark(tmpDate), IntensityThemeColor(tmpIntensity));
+```
+
+## Switching Themes in the UI
+
+The theme toggle button switches between light and dark themes:
+
+```pascal
+procedure TForm1.BThemeClick(Sender: TObject);
+begin
+  if BTheme.Caption = 'Dark' then
+  begin
+    currentTheme:=GithubDarkTheme;
+    BTheme.Caption:='Light';
+  end
+  else
+  begin
+    currentTheme:=StandardTheme;
+    BTheme.Caption:='Dark';
+  end;
+
+  Self.Color:=currentTheme.Background;
+  Self.Font.Color:=currentTheme.Text;
+  EUsername.Color:=currentTheme.Background;
+  CBYears.Color:=currentTheme.Background;
+  CBFirstDayOfWeek.Color:=currentTheme.Background;
+
+  Chart1.Color:=currentTheme.Background;
+
+  for var i:=0 to High(monthTitles) do
+    monthTitles[i].Shape.Font.Color:=currentTheme.Text;
+
+  for var i:=0 to High(dayTitles) do
+    dayTitles[i].Shape.Font.Color:=currentTheme.Text;
+
+  DrawChart;
+end;
+```
+
+### Theme Application Process
+
+<Steps>
+  <Step title="Toggle Theme">
+    Switch between `StandardTheme` and `GithubDarkTheme` based on button caption
+  </Step>
+  
+  <Step title="Update Button Label">
+    Change button text to show the opposite theme (shows "Dark" when in light mode)
+  </Step>
+  
+  <Step title="Apply Background Colors">
+    Update form, chart, and input controls with theme background color
+  </Step>
+  
+  <Step title="Apply Text Colors">
+    Update form font, month labels, and day labels with theme text color
+  </Step>
+  
+  <Step title="Redraw Chart">
+    Call `DrawChart` to re-render all contribution points with new intensity colors
+  </Step>
+</Steps>
+
+## Current Theme State
+
+The active theme is stored in a global variable:
+
+```pascal
+var
+  currentTheme: TTheme;
+```
+
+Initialized to the standard theme on startup:
+
+```pascal
+initialization
+  CurrentTheme := StandardTheme;
+```
+
+## Creating Custom Themes
+
+To create a custom theme, define a new constant with the `TTheme` structure:
+
+```pascal
+const
+  MyCustomTheme: TTheme = (
+    Background: $F5F5F5;  // Your background color
+    Text: $333333;        // Your text color
+    Meta: $999999;        // Your metadata color
+    Grades: (
+      $E0E0E0,  // Level 0 - No contributions
+      $FFD700,  // Level 1 - Low activity
+      $FFA500,  // Level 2 - Medium activity
+      $FF8C00,  // Level 3 - High activity
+      $FF4500   // Level 4 - Very high activity
+    );
+  );
+```
+
+<Tip>
+When designing custom themes, ensure sufficient contrast between intensity levels and between text and background for accessibility.
+</Tip>
+
+## Theme-Aware Components
+
+The following UI components update when themes change:
+
+- Main form background and font
+- Chart background
+- Username input field
+- Year selection dropdown
+- First day of week dropdown
+- Month label annotations (12 labels)
+- Day label annotations (3 labels)
+- All contribution data points (redrawn with new colors)

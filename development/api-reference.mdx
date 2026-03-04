@@ -1,0 +1,595 @@
+---
+title: API Reference
+description: Complete API documentation for all functions, procedures, and types in the GitHub Contributions Chart application
+icon: book
+---
+
+## Overview
+
+This page documents all public functions, procedures, and types used in the GitHub Contributions Chart application. All code references include file locations for easy navigation.
+
+## Functions
+
+### DownloadWeb
+
+Downloads content from a URL using HTTP GET request.
+
+**Location**: `Unit1.pas:55-64`
+
+```pascal
+function DownloadWeb(aURL: string): string;
+```
+
+<ParamField path="aURL" type="string" required>
+  The URL to download from. Must be a valid HTTP or HTTPS URL.
+</ParamField>
+
+**Returns**: `string` - The response body as a string
+
+**Description**:
+
+Creates a temporary `TNetHTTPClient` instance, performs a GET request to the specified URL, and returns the response content as a string. The HTTP client is automatically freed after the request completes.
+
+**Implementation**:
+
+```pascal
+function DownloadWeb(aURL: string): string;
+var httpClient: TNetHTTPClient;
+begin
+  httpClient := TNetHTTPClient.Create(nil);
+  try
+    Result := httpClient.Get(aURL).ContentAsString;
+  finally
+    httpClient.Free;
+  end;
+end;
+```
+
+**Example Usage**:
+
+```pascal
+var
+  htmlContent: string;
+begin
+  htmlContent := DownloadWeb('https://api.example.com/data');
+end;
+```
+
+<Warning>
+  This function is blocking and will freeze the UI during the request. Consider using asynchronous methods for production applications.
+</Warning>
+
+---
+
+### GetGitHubContributions
+
+Fetches GitHub contribution data for a specific user from the github-contributions API.
+
+**Location**: `Unit1.pas:66-72`
+
+```pascal
+function GetGitHubContributions(username: string): TJSONObject;
+```
+
+<ParamField path="username" type="string" required>
+  The GitHub username to fetch contributions for. Case-sensitive.
+</ParamField>
+
+**Returns**: `TJSONObject` - A JSON object containing contribution data with the following structure:
+
+```json
+{
+  "years": ["2024", "2023", "2022"],
+  "contributions": [
+    {
+      "date": "2024-03-04",
+      "count": 5,
+      "intensity": 2
+    },
+    ...
+  ]
+}
+```
+
+**Description**:
+
+Calls the github-contributions.vercel.app API to retrieve contribution data for the specified username. The response is parsed into a `TJSONObject` for easy traversal.
+
+**Implementation**:
+
+```pascal
+function GetGitHubContributions(username: string): TJSONObject;
+var
+  response: string;
+begin
+  response := DownloadWeb(Format('https://github-contributions.vercel.app/api/v1/%s', [username]));
+  Result := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(response), 0) as TJSONObject;
+end;
+```
+
+**Example Usage**:
+
+```pascal
+var
+  data: TJSONObject;
+  years: TJSONArray;
+begin
+  data := GetGitHubContributions('sallar');
+  if data.TryGetValue<TJSONArray>('years', years) then
+  begin
+    // Process years array
+  end;
+end;
+```
+
+<Note>
+  The caller is responsible for freeing the returned `TJSONObject` to prevent memory leaks.
+</Note>
+
+---
+
+### FormatMark
+
+Formats a date into a human-readable string with ordinal suffix (e.g., "March 4th").
+
+**Location**: `Unit1.pas:109-120`
+
+```pascal
+function FormatMark(ADate: TDateTime): string;
+```
+
+<ParamField path="ADate" type="TDateTime" required>
+  The date to format. Must be a valid TDateTime value.
+</ParamField>
+
+**Returns**: `string` - Formatted date string with ordinal suffix
+
+**Description**:
+
+Converts a date into a readable format like "January 1st", "February 2nd", "March 3rd", or "April 4th". Uses invariant format settings to ensure consistent English month names.
+
+**Implementation**:
+
+```pascal
+function FormatMark(ADate: TDateTime): string;
+begin
+  Result := Format('%s %d', [TFormatSettings.Invariant.LongMonthNames[MonthOf(ADate)], DayOf(ADate)]);
+
+  case DayOf(ADate) of
+    1, 21, 31: Result := Result + 'st';
+    2, 22: Result := Result + 'nd';
+    3, 23: Result := Result + 'rd';
+    else
+       Result := Result + 'th';
+  end;
+end;
+```
+
+**Example Output**:
+
+- `FormatMark(EncodeDate(2024, 3, 1))` → "March 1st"
+- `FormatMark(EncodeDate(2024, 3, 2))` → "March 2nd"
+- `FormatMark(EncodeDate(2024, 3, 3))` → "March 3rd"
+- `FormatMark(EncodeDate(2024, 3, 4))` → "March 4th"
+- `FormatMark(EncodeDate(2024, 3, 21))` → "March 21st"
+
+<Info>
+  This function is used to generate tooltip text for each contribution square in the chart.
+</Info>
+
+---
+
+### IntensityThemeColor
+
+Maps a GitHub intensity level (0-4) to the corresponding color in the current theme.
+
+**Location**: `Unit1.pas:175-178`
+
+```pascal
+function IntensityThemeColor(AIntensity: Integer): TColor;
+```
+
+<ParamField path="AIntensity" type="Integer" required>
+  The contribution intensity level. Valid range: 0-4
+  - 0: No contributions
+  - 1: Low contributions
+  - 2: Medium contributions
+  - 3: High contributions
+  - 4: Very high contributions
+</ParamField>
+
+**Returns**: `TColor` - The color corresponding to the intensity level in the active theme
+
+**Description**:
+
+Looks up the color for a given intensity level from the `currentTheme.Grades` array. This function provides the color mapping that makes the contribution graph visually represent activity levels.
+
+**Implementation**:
+
+```pascal
+function IntensityThemeColor(AIntensity: Integer): TColor;
+begin
+  Result := currentTheme.Grades[AIntensity];
+end;
+```
+
+**Example Colors (StandardTheme)**:
+
+- Intensity 0: `$F0EDEB` (Very light gray)
+- Intensity 1: `$A8E99B` (Light green)
+- Intensity 2: `$63C440` (Medium green)
+- Intensity 3: `$4EA130` (Dark green)
+- Intensity 4: `$396E21` (Very dark green)
+
+<Warning>
+  Passing an intensity value outside the 0-4 range will cause an array index out of bounds exception.
+</Warning>
+
+---
+
+## Procedures
+
+### CustomWeekDayOfTheYear
+
+Calculates the week number and day of week for a given date, with support for different week start days.
+
+**Location**: `Unit1.pas:122-143`
+
+```pascal
+procedure CustomWeekDayOfTheYear(
+  ADate: TDateTime; 
+  AFirstDayOfWeek: Integer; 
+  var AWeek, ADay: Integer
+);
+```
+
+<ParamField path="ADate" type="TDateTime" required>
+  The date to calculate week and day for.
+</ParamField>
+
+<ParamField path="AFirstDayOfWeek" type="Integer" required>
+  Specifies which day starts the week:
+  - `0`: Sunday as first day of week
+  - `1`: Monday as first day of week
+</ParamField>
+
+<ParamField path="AWeek" type="Integer" required>
+  **Output parameter**. Receives the week number of the year (1-53).
+  
+  Special values:
+  - `-1`: Date belongs to previous year's last week
+  - `WeeksInYear + 1`: Date belongs to next year's first week
+</ParamField>
+
+<ParamField path="ADay" type="Integer" required>
+  **Output parameter**. Receives the day of the week (1-7).
+  
+  When `AFirstDayOfWeek = 0` (Sunday start):
+  - 1 = Sunday, 2 = Monday, ..., 7 = Saturday
+  
+  When `AFirstDayOfWeek = 1` (Monday start):
+  - 1 = Monday, 2 = Tuesday, ..., 7 = Sunday
+</ParamField>
+
+**Description**:
+
+Calculates both the ISO week number and day of the week, accounting for edge cases where dates fall in the previous or next year's weeks. Supports both Sunday-first and Monday-first week conventions.
+
+**Implementation**:
+
+```pascal
+procedure CustomWeekDayOfTheYear(ADate: TDateTime; AFirstDayOfWeek: Integer; var AWeek, ADay: Integer);
+var
+  tmpYear: Word;
+begin
+  AWeek := WeekOfTheYear(ADate, tmpYear);
+  if tmpYear < YearOf(ADate) then
+    AWeek := -1
+  else if tmpYear > YearOf(ADate) then
+    AWeek := WeeksInYear(ADate) + 1;
+
+  ADay := DayOfTheWeek(ADate);
+
+  if (AFirstDayOfWeek = 1) then
+  begin
+    ADay := (ADay mod 7) + 1;
+
+    if DayOfTheWeek(ADate) = 7 then
+    begin
+      Inc(AWeek);
+    end;
+  end;
+end;
+```
+
+**Example Usage**:
+
+```pascal
+var
+  weekNum, dayNum: Integer;
+  myDate: TDateTime;
+begin
+  myDate := EncodeDate(2024, 1, 1);  // January 1st, 2024 (Monday)
+  
+  // Monday as first day
+  CustomWeekDayOfTheYear(myDate, 1, weekNum, dayNum);
+  // weekNum = 1, dayNum = 1 (Monday)
+  
+  // Sunday as first day
+  CustomWeekDayOfTheYear(myDate, 0, weekNum, dayNum);
+  // weekNum = 1, dayNum = 2 (Monday is 2nd day when Sunday is first)
+end;
+```
+
+<Info>
+  This function is critical for positioning contribution squares correctly in the chart grid.
+</Info>
+
+---
+
+## Types
+
+### TTheme
+
+Defines a complete color scheme for the application.
+
+**Location**: `Themes.pas:8-13`
+
+```pascal
+type
+  TTheme = record
+    Background: TColor;
+    Text: TColor;
+    Meta: TColor;
+    Grades: array [0..4] of TColor;
+  end;
+```
+
+**Fields**:
+
+<ParamField path="Background" type="TColor">
+  The background color for the form and controls.
+</ParamField>
+
+<ParamField path="Text" type="TColor">
+  The primary text color for labels and annotations.
+</ParamField>
+
+<ParamField path="Meta" type="TColor">
+  The secondary text color for metadata (currently unused).
+</ParamField>
+
+<ParamField path="Grades" type="array [0..4] of TColor">
+  An array of 5 colors representing contribution intensity levels:
+  - `Grades[0]`: No contributions (lightest)
+  - `Grades[1]`: Low contributions
+  - `Grades[2]`: Medium contributions
+  - `Grades[3]`: High contributions
+  - `Grades[4]`: Very high contributions (darkest/most saturated)
+</ParamField>
+
+**Description**:
+
+A record type that encapsulates all colors needed for the application's visual theme. The `Grades` array provides the five-level color scale used to visualize GitHub contribution intensity.
+
+---
+
+## Constants
+
+### StandardTheme
+
+The default light theme matching GitHub's standard color scheme.
+
+**Location**: `Themes.pas:16-21`
+
+```pascal
+const
+  StandardTheme: TTheme = (
+    Background: $FFFFFF;  // White
+    Text: $000000;        // Black
+    Meta: $666666;        // Gray
+    Grades: ($F0EDEB, $A8E99B, $63C440, $4EA130, $396E21);
+  );
+```
+
+**Color Breakdown**:
+
+<CardGroup cols={2}>
+  <Card title="Background">
+    `$FFFFFF` - Pure white
+  </Card>
+  <Card title="Text">
+    `$000000` - Pure black
+  </Card>
+  <Card title="Meta">
+    `$666666` - Medium gray
+  </Card>
+  <Card title="Grade 0">
+    `$F0EDEB` - Very light beige (no activity)
+  </Card>
+  <Card title="Grade 1">
+    `$A8E99B` - Light green
+  </Card>
+  <Card title="Grade 2">
+    `$63C440` - Medium green
+  </Card>
+  <Card title="Grade 3">
+    `$4EA130` - Dark green
+  </Card>
+  <Card title="Grade 4">
+    `$396E21` - Very dark green
+  </Card>
+</CardGroup>
+
+<Note>
+  Delphi uses BGR color format, so `$RRGGBB` in CSS becomes `$BBGGRR` in Pascal.
+</Note>
+
+---
+
+### GithubDarkTheme
+
+The dark theme matching GitHub's dark mode color scheme.
+
+**Location**: `Themes.pas:23-28`
+
+```pascal
+const
+  GithubDarkTheme: TTheme = (
+    Background: $101217;  // Very dark gray (almost black)
+    Text: $FFFFFF;        // White
+    Meta: $DDDDDD;        // Light gray
+    Grades: ($221B16, $203800, $2D6000, $3D9810, $45D527);
+  );
+```
+
+**Color Breakdown**:
+
+<CardGroup cols={2}>
+  <Card title="Background">
+    `$101217` - Very dark gray (near black)
+  </Card>
+  <Card title="Text">
+    `$FFFFFF` - Pure white
+  </Card>
+  <Card title="Meta">
+    `$DDDDDD` - Light gray
+  </Card>
+  <Card title="Grade 0">
+    `$221B16` - Dark brown (no activity)
+  </Card>
+  <Card title="Grade 1">
+    `$203800` - Very dark green
+  </Card>
+  <Card title="Grade 2">
+    `$2D6000` - Dark green
+  </Card>
+  <Card title="Grade 3">
+    `$3D9810` - Medium bright green
+  </Card>
+  <Card title="Grade 4">
+    `$45D527` - Bright lime green
+  </Card>
+</CardGroup>
+
+---
+
+## Module-Level Variables
+
+These variables maintain global state for the application.
+
+**Location**: `Unit1.pas:49-53`
+
+```pascal
+var
+  gitHubContributions: TJSONObject;
+  monthTitles: TArray<TAnnotationTool>;
+  dayTitles: TArray<TAnnotationTool>;
+  currentTheme: TTheme;
+```
+
+### gitHubContributions
+
+<ParamField path="gitHubContributions" type="TJSONObject">
+  Stores the complete JSON response from the GitHub contributions API. Contains both the `years` array and the `contributions` array. This object persists across chart redraws to avoid re-fetching data.
+</ParamField>
+
+### monthTitles
+
+<ParamField path="monthTitles" type="TArray<TAnnotationTool>">
+  Array of 12 annotation tools, one for each month label (Jan, Feb, Mar, etc.). Created in `FormCreate` and positioned in `DrawChart`.
+</ParamField>
+
+### dayTitles
+
+<ParamField path="dayTitles" type="TArray<TAnnotationTool>">
+  Array of 3 annotation tools for alternating weekday labels (Mon, Wed, Fri or Sun, Tue, Thu depending on week start). Created in `FormCreate` and positioned in `DrawChart`.
+</ParamField>
+
+### currentTheme
+
+<ParamField path="currentTheme" type="TTheme">
+  The currently active theme. Initialized to `StandardTheme` in the unit's initialization section. Modified by the theme toggle button.
+</ParamField>
+
+<Warning>
+  The `gitHubContributions` object should be freed before the application exits to prevent memory leaks. Consider adding cleanup code to the form's `OnDestroy` event.
+</Warning>
+
+---
+
+## Usage Examples
+
+### Fetching and Displaying Contributions
+
+```pascal
+var
+  contributions: TJSONObject;
+  years: TJSONArray;
+  contribArray: TJSONArray;
+begin
+  // Fetch data
+  contributions := GetGitHubContributions('octocat');
+  
+  try
+    // Extract years
+    if contributions.TryGetValue<TJSONArray>('years', years) then
+      ShowMessage('Available years: ' + years.Count.ToString);
+    
+    // Extract contributions
+    if contributions.TryGetValue<TJSONArray>('contributions', contribArray) then
+      ShowMessage('Total contributions: ' + contribArray.Count.ToString);
+  finally
+    contributions.Free;
+  end;
+end;
+```
+
+### Custom Theme Creation
+
+```pascal
+var
+  customTheme: TTheme;
+begin
+  customTheme.Background := clWhite;
+  customTheme.Text := clBlack;
+  customTheme.Meta := clGray;
+  
+  // Create a red-scale gradient
+  customTheme.Grades[0] := RGB(255, 240, 240);
+  customTheme.Grades[1] := RGB(255, 200, 200);
+  customTheme.Grades[2] := RGB(255, 150, 150);
+  customTheme.Grades[3] := RGB(200, 50, 50);
+  customTheme.Grades[4] := RGB(150, 0, 0);
+  
+  currentTheme := customTheme;
+end;
+```
+
+### Date Formatting
+
+```pascal
+var
+  dateStr: string;
+  today: TDateTime;
+begin
+  today := Now;
+  dateStr := FormatMark(today);
+  // Output: "March 4th" (for March 4, 2026)
+  
+  Chart1.Title.Text.Add(dateStr);
+end;
+```
+
+---
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="Code Structure" icon="sitemap" href="./code-structure">
+    Learn how these APIs are used in the application architecture
+  </Card>
+  <Card title="Development Setup" icon="wrench" href="./setup">
+    Set up your environment to use these APIs
+  </Card>
+</CardGroup>

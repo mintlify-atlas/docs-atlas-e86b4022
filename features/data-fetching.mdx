@@ -1,0 +1,168 @@
+---
+title: Data Fetching
+description: Learn how the GitHub Contributions Chart fetches contribution data from the GitHub API
+icon: 'download'
+---
+
+## Overview
+
+The application fetches GitHub contribution data using a third-party API service that aggregates GitHub activity data. The data is retrieved in JSON format and parsed to extract contribution information.
+
+## API Endpoint
+
+The app uses the following API endpoint:
+
+```
+https://github-contributions.vercel.app/api/v1/{username}
+```
+
+This endpoint returns a JSON response containing:
+- **years**: Array of years with available contribution data
+- **contributions**: Array of daily contribution records with date and intensity
+
+## DownloadWeb Function
+
+The `DownloadWeb` function is a simple HTTP client wrapper that retrieves content from a URL:
+
+```pascal
+function DownloadWeb(aURL: string): string;
+var httpClient: TNetHTTPClient;
+begin
+  httpClient := TNetHTTPClient.Create(nil);
+  try
+    Result := httpClient.Get(aURL).ContentAsString;
+  finally
+    httpClient.Free;
+  end;
+end;
+```
+
+<Info>
+The function uses Delphi's `TNetHTTPClient` component to perform the HTTP GET request and returns the response as a string.
+</Info>
+
+## GetGitHubContributions Function
+
+This function combines URL formatting, HTTP request, and JSON parsing:
+
+```pascal
+function GetGitHubContributions(username: string): TJSONObject;
+var
+  response: string;
+begin
+  response := DownloadWeb(Format('https://github-contributions.vercel.app/api/v1/%s', [username]));
+  Result := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(response), 0) as TJSONObject;
+end;
+```
+
+### How it works:
+
+1. **Format URL**: Inserts the username into the API endpoint URL
+2. **Download**: Calls `DownloadWeb` to retrieve the JSON response
+3. **Parse**: Converts the JSON string to a `TJSONObject` for easy access
+
+## JSON Data Structure
+
+The API returns JSON in the following format:
+
+```json
+{
+  "years": ["2024", "2023", "2022"],
+  "contributions": [
+    {
+      "date": "2024-01-01",
+      "intensity": 2
+    },
+    {
+      "date": "2024-01-02",
+      "intensity": 4
+    }
+  ]
+}
+```
+
+### Data Fields
+
+- **date**: ISO 8601 date format (YYYY-MM-DD)
+- **intensity**: Integer from 0-4 representing contribution level
+  - 0: No contributions
+  - 1: Low activity
+  - 2: Medium activity
+  - 3: High activity
+  - 4: Very high activity
+
+## Parsing the Response
+
+The application parses the JSON response using Delphi's JSON iterator:
+
+```pascal
+procedure TForm1.BGetContributionsClick(Sender: TObject);
+var
+  iterator:     TJSONIterator;
+  years:        TJSONArray;
+begin
+  Screen.Cursor := crHourGlass;
+  CBYears.Enabled := False;
+  CBYears.Clear;
+
+  gitHubContributions := GetGitHubContributions(EUsername.Text);
+
+  if not gitHubContributions.TryGetValue<TJSONArray>('years', years) then
+    Exit;
+
+  iterator := TJSONIterator.Create(TJsonObjectReader.Create(years));
+  while iterator.Next do
+  begin
+    iterator.Recurse;
+    iterator.Next;
+    CBYears.Items.Add(iterator.AsString);
+    iterator.Return;
+  end;
+
+  if CBYears.Items.Count>0 then
+  begin
+    CBYears.Enabled := True;
+    CBYears.ItemIndex := 0;
+    CBYearsChange(Self);
+
+    CBFirstDayOfWeek.Enabled := True;
+  end;
+
+  Screen.Cursor := crDefault;
+end;
+```
+
+### Parsing Steps
+
+<Steps>
+  <Step title="Fetch Data">
+    Call `GetGitHubContributions` with the username from the input field
+  </Step>
+  
+  <Step title="Extract Years">
+    Use `TryGetValue` to safely extract the years array from the JSON
+  </Step>
+  
+  <Step title="Iterate Years">
+    Use `TJSONIterator` to loop through available years and populate the dropdown
+  </Step>
+  
+  <Step title="Enable UI">
+    Enable year selection and trigger chart rendering
+  </Step>
+</Steps>
+
+<Warning>
+The application doesn't implement error handling for network failures or invalid usernames. In production, you should add try-catch blocks and user-friendly error messages.
+</Warning>
+
+## Global State
+
+The fetched data is stored in a global variable for access throughout the application:
+
+```pascal
+var
+  gitHubContributions: TJSONObject;
+```
+
+This allows the chart rendering functions to access contribution data without re-fetching from the API.
