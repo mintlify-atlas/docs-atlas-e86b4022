@@ -1,0 +1,59 @@
+{
+  "projectType": "general",
+  "projectName": "GitHub Contributions Chart",
+  "projectDescription": "A TeeChart VCL demo application that visualizes GitHub user contribution data in an interactive chart.",
+  "theme": "palm",
+  "primaryColor": "#3bb358",
+  "lightColor": "#9bebab",
+  "darkColor": "#246c3c",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": [
+          "introduction",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Features",
+        "pages": [
+          "features/data-fetching",
+          "features/chart-visualization",
+          "features/themes"
+        ]
+      },
+      {
+        "group": "Development",
+        "pages": [
+          "development/setup",
+          "development/code-structure",
+          "development/api-reference"
+        ]
+      },
+      {
+        "group": "Resources",
+        "pages": [
+          "resources/credits",
+          "resources/faq"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Fetch GitHub contribution data via API",
+    "Interactive TeeChart visualization with zoom and hover tooltips",
+    "Light and dark theme support",
+    "Year selection and week start customization",
+    "Color-coded contribution intensity display"
+  ],
+  "publicApiSurface": [
+    "GetGitHubContributions(username: string): TJSONObject",
+    "DownloadWeb(aURL: string): string",
+    "FormatMark(ADate: TDateTime): string",
+    "CustomWeekDayOfTheYear(ADate, AFirstDayOfWeek, var AWeek, ADay)",
+    "IntensityThemeColor(AIntensity: Integer): TColor",
+    "TTheme record with Background, Text, Meta, Grades fields",
+    "StandardTheme and GithubDarkTheme constants"
+  ]
+}
